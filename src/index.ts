@@ -7,6 +7,7 @@ import { createAccountsCommand } from './commands/accounts.js';
 import { createPortfolioCommand } from './commands/portfolio.js';
 import { createHistoryCommand } from './commands/history.js';
 import { createInstrumentsCommand } from './commands/instruments.js';
+import { createInstrumentCommand } from './commands/instrument.js';
 import { setRetryEnabled } from './helpers/fetch.js';
 
 const program = new Command();
@@ -29,5 +30,6 @@ program.addCommand(createAccountsCommand());
 program.addCommand(createPortfolioCommand());
 program.addCommand(createHistoryCommand());
 program.addCommand(createInstrumentsCommand());
+program.addCommand(createInstrumentCommand());
 
 program.parse(process.argv);

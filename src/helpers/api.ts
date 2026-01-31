@@ -204,8 +204,25 @@ export async function getHistory(
   }
 }
 
-export type SecurityType = 'EQUITY' | 'ETF' | 'ADR' | 'CRYPTO' | 'OPTION';
-export type TradingStatus = 'BUY_AND_SELL' | 'BUY_ONLY' | 'SELL_ONLY' | 'NONE';
+export type SecurityType =
+  | 'EQUITY'
+  | 'ETF'
+  | 'ADR'
+  | 'CRYPTO'
+  | 'OPTION'
+  | 'MULTI_LEG_INSTRUMENT'
+  | 'ALT'
+  | 'TREASURY'
+  | 'BOND'
+  | 'INDEX';
+
+export type TradingStatus =
+  | 'BUY_AND_SELL'
+  | 'BUY_ONLY'
+  | 'SELL_ONLY'
+  | 'LIQUIDATION_ONLY'
+  | 'DISABLED'
+  | 'NONE';
 
 export interface InstrumentInfo {
   symbol: string;
@@ -268,4 +285,20 @@ export async function getInstruments(
   const path = `userapigateway/trading/instruments${queryString ? `?${queryString}` : ''}`;
 
   return authenticatedFetch<InstrumentsResponse>(path);
+}
+
+export async function getInstrument(
+  symbol: string,
+  type: SecurityType
+): Promise<InstrumentEntry> {
+  const path = `userapigateway/trading/instruments/${encodeURIComponent(symbol)}/${encodeURIComponent(type)}`;
+
+  try {
+    return await authenticatedFetch<InstrumentEntry>(path);
+  } catch (err) {
+    if (err instanceof ApiError && err.statusCode === 404) {
+      throw new NotFoundError(`Instrument '${symbol}' (${type}) not found`);
+    }
+    throw err;
+  }
 }

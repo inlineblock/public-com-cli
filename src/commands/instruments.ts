@@ -15,12 +15,19 @@ const VALID_SECURITY_TYPES: SecurityType[] = [
   'ADR',
   'CRYPTO',
   'OPTION',
+  'MULTI_LEG_INSTRUMENT',
+  'ALT',
+  'TREASURY',
+  'BOND',
+  'INDEX',
 ];
 
 const VALID_TRADING_STATUSES: TradingStatus[] = [
   'BUY_AND_SELL',
   'BUY_ONLY',
   'SELL_ONLY',
+  'LIQUIDATION_ONLY',
+  'DISABLED',
   'NONE',
 ];
 
@@ -56,6 +63,10 @@ function formatTradingStatus(status: string): string {
       return 'Buy Only';
     case 'SELL_ONLY':
       return 'Sell Only';
+    case 'LIQUIDATION_ONLY':
+      return 'Liquidation';
+    case 'DISABLED':
+      return 'Disabled';
     case 'NONE':
       return 'None';
     default:
