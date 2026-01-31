@@ -5,6 +5,7 @@ import { createAuthenticateCommand } from './commands/authenticate.js';
 import { createConfigCommand } from './commands/config.js';
 import { createAccountsCommand } from './commands/accounts.js';
 import { createPortfolioCommand } from './commands/portfolio.js';
+import { createHistoryCommand } from './commands/history.js';
 import { setRetryEnabled } from './helpers/fetch.js';
 
 const program = new Command();
@@ -25,5 +26,6 @@ program.addCommand(createAuthenticateCommand());
 program.addCommand(createConfigCommand());
 program.addCommand(createAccountsCommand());
 program.addCommand(createPortfolioCommand());
+program.addCommand(createHistoryCommand());
 
 program.parse(process.argv);
