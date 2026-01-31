@@ -193,13 +193,34 @@ npm install
 
 ### Commands
 
-| Command                | Description                      |
-| ---------------------- | -------------------------------- |
-| `npm run build`        | Compile TypeScript to JavaScript |
-| `npm run dev`          | Run the CLI in development mode  |
-| `npm run format`       | Format code with Prettier        |
-| `npm run format:check` | Check code formatting            |
-| `npm run typecheck`    | Run TypeScript type checking     |
+| Command                        | Description                                  |
+| ------------------------------ | -------------------------------------------- |
+| `npm run build`                | Compile TypeScript to JavaScript             |
+| `npm run build:binary`         | Build standalone binaries for all platforms  |
+| `npm run build:binary:current` | Build standalone binary for current platform |
+| `npm run dev`                  | Run the CLI in development mode              |
+| `npm run format`               | Format code with Prettier                    |
+| `npm run format:check`         | Check code formatting                        |
+| `npm run typecheck`            | Run TypeScript type checking                 |
+
+### Building Standalone Binaries
+
+Create a single executable that includes Node.js runtime:
+
+```bash
+# Build for current platform only
+npm run build:binary:current
+./dist/public-com-cli --help
+
+# Build for all platforms (macOS, Linux, Windows)
+npm run build:binary
+ls dist/bin/
+```
+
+The binaries are output to:
+
+- `dist/public-com-cli` (current platform)
+- `dist/bin/` (all platforms: macOS ARM64/x64, Linux x64, Windows x64)
 
 ## Security
 
