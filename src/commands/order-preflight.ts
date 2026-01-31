@@ -10,7 +10,7 @@ import {
   type MarketSession,
   type OpenCloseIndicator,
 } from '../helpers/api.js';
-import { error, success } from '../helpers/output.js';
+import { error, success, header, row, subheader } from '../helpers/output.js';
 
 function formatCurrency(value?: string): string {
   if (!value) return 'N/A';
@@ -101,14 +101,11 @@ export function createOrderPreflightCommand(): Command {
             options.openClose?.toUpperCase() as OpenCloseIndicator,
         });
 
-        success(`\nOrder Preflight for ${symbol.toUpperCase()}:\n`);
+        success(`Order Preflight for ${symbol.toUpperCase()}`);
+        header('Cost Estimate');
 
-        console.log(
-          `  Order Value:      ${formatCurrency(response.orderValue)}`
-        );
-        console.log(
-          `  Est. Commission:  ${formatCurrency(response.estimatedCommission)}`
-        );
+        row('Order Value:     ', formatCurrency(response.orderValue));
+        row('Est. Commission: ', formatCurrency(response.estimatedCommission));
 
         if (response.regulatoryFees) {
           const fees = response.regulatoryFees;
@@ -122,53 +119,47 @@ export function createOrderPreflightCommand(): Command {
             .filter(Boolean)
             .reduce((sum, fee) => sum + parseFloat(fee || '0'), 0);
           if (totalFees > 0) {
-            console.log(
-              `  Regulatory Fees:  ${formatCurrency(totalFees.toString())}`
-            );
+            row('Regulatory Fees: ', formatCurrency(totalFees.toString()));
           }
         }
 
         if (side === 'BUY') {
-          console.log(
-            `  Est. Cost:        ${formatCurrency(response.estimatedCost)}`
-          );
+          row('Est. Cost:       ', formatCurrency(response.estimatedCost));
         } else {
-          console.log(
-            `  Est. Proceeds:    ${formatCurrency(response.estimatedProceeds)}`
-          );
+          row('Est. Proceeds:   ', formatCurrency(response.estimatedProceeds));
         }
 
-        console.log(
-          `  Buying Power Req: ${formatCurrency(response.buyingPowerRequirement)}`
-        );
+        row('Buying Power Req:', formatCurrency(response.buyingPowerRequirement));
 
         if (response.marginRequirement) {
           if (response.marginRequirement.initialRequirement) {
-            console.log(
-              `  Initial Margin:   ${formatCurrency(response.marginRequirement.initialRequirement)}`
+            row(
+              'Initial Margin:  ',
+              formatCurrency(response.marginRequirement.initialRequirement)
             );
           }
           if (response.marginRequirement.maintenanceRequirement) {
-            console.log(
-              `  Maint. Margin:    ${formatCurrency(response.marginRequirement.maintenanceRequirement)}`
+            row(
+              'Maint. Margin:   ',
+              formatCurrency(response.marginRequirement.maintenanceRequirement)
             );
           }
         }
 
         if (response.optionDetails) {
-          console.log('\n  Option Details:');
+          subheader('Option Details');
           if (response.optionDetails.strikePrice) {
-            console.log(
-              `    Strike:     ${formatCurrency(response.optionDetails.strikePrice)}`
+            row(
+              'Strike:    ',
+              formatCurrency(response.optionDetails.strikePrice),
+              4
             );
           }
           if (response.optionDetails.expirationDate) {
-            console.log(
-              `    Expiration: ${response.optionDetails.expirationDate}`
-            );
+            row('Expiration:', response.optionDetails.expirationDate, 4);
           }
           if (response.optionDetails.optionType) {
-            console.log(`    Type:       ${response.optionDetails.optionType}`);
+            row('Type:      ', response.optionDetails.optionType, 4);
           }
         }
 

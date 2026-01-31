@@ -5,7 +5,7 @@ import {
   AuthenticationError,
   RateLimitError,
 } from '../helpers/api.js';
-import { success, error, info } from '../helpers/output.js';
+import { success, error, info, row, bold, dim } from '../helpers/output.js';
 
 export function createAccountsCommand(): Command {
   const accounts = new Command('accounts')
@@ -20,15 +20,15 @@ export function createAccountsCommand(): Command {
         }
 
         success(
-          `Found ${accounts.length} account${accounts.length > 1 ? 's' : ''}:\n`
+          `Found ${accounts.length} account${accounts.length > 1 ? 's' : ''}`
         );
+        console.log();
 
         for (const account of accounts) {
-          console.log(`  Account ID:        ${account.accountId}`);
-          console.log(`  Account Type:      ${account.accountType}`);
-          console.log(`  Brokerage Type:    ${account.brokerageAccountType}`);
-          console.log(`  Options Level:     ${account.optionsLevel}`);
-          console.log(`  Trade Permissions: ${account.tradePermissions}`);
+          console.log(`  ${bold(account.accountId)} ${dim(`(${account.accountType})`)}`);
+          row('Brokerage Type:   ', account.brokerageAccountType, 4);
+          row('Options Level:    ', account.optionsLevel, 4);
+          row('Trade Permissions:', account.tradePermissions, 4);
           console.log();
         }
       } catch (err) {

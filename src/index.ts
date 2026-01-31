@@ -24,7 +24,7 @@ const program = new Command();
 program
   .name('public-cli')
   .description('CLI for interacting with Public.com API')
-  .version('0.1.0')
+  .version('0.1.1')
   .option('--no-retry', 'Disable automatic retries on server errors')
   .hook('preAction', () => {
     const opts = program.opts();

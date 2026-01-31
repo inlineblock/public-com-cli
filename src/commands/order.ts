@@ -6,7 +6,17 @@ import {
   RateLimitError,
   NotFoundError,
 } from '../helpers/api.js';
-import { error, success } from '../helpers/output.js';
+import {
+  error,
+  success,
+  header,
+  subheader,
+  row,
+  green,
+  red,
+  yellow,
+  cyan,
+} from '../helpers/output.js';
 
 function formatCurrency(value?: string): string {
   if (!value) return 'N/A';
@@ -21,21 +31,21 @@ function formatCurrency(value?: string): string {
 function formatStatus(status: string): string {
   switch (status) {
     case 'NEW':
-      return 'New';
+      return cyan('New');
     case 'PENDING':
-      return 'Pending';
+      return yellow('Pending');
     case 'OPEN':
-      return 'Open';
+      return cyan('Open');
     case 'FILLED':
-      return 'Filled';
+      return green('Filled');
     case 'PARTIALLY_FILLED':
-      return 'Partially Filled';
+      return yellow('Partially Filled');
     case 'CANCELLED':
-      return 'Cancelled';
+      return yellow('Cancelled');
     case 'REJECTED':
-      return 'Rejected';
+      return red('Rejected');
     case 'EXPIRED':
-      return 'Expired';
+      return yellow('Expired');
     default:
       return status;
   }
@@ -50,62 +60,53 @@ export function createOrderCommand(): Command {
       try {
         const details = await getOrder(accountId, orderId);
 
-        success(`\nOrder Details:\n`);
+        success('Order Details');
+        header(`${details.instrument.symbol} - ${details.side} ${details.type}`);
 
-        console.log(`  Order ID:     ${details.orderId}`);
-        console.log(
-          `  Symbol:       ${details.instrument.symbol} (${details.instrument.type})`
-        );
-        console.log(`  Side:         ${details.side}`);
-        console.log(`  Type:         ${details.type}`);
-        console.log(`  Status:       ${formatStatus(details.status)}`);
+        row('Order ID:    ', details.orderId);
+        row('Symbol:      ', `${details.instrument.symbol} (${details.instrument.type})`);
+        row('Side:        ', details.side);
+        row('Type:        ', details.type);
+        row('Status:      ', formatStatus(details.status));
 
         if (details.quantity) {
-          console.log(`  Quantity:     ${details.quantity}`);
+          row('Quantity:    ', details.quantity);
         }
         if (details.notionalValue) {
-          console.log(
-            `  Notional:     ${formatCurrency(details.notionalValue)}`
-          );
+          row('Notional:    ', formatCurrency(details.notionalValue));
         }
         if (details.limitPrice) {
-          console.log(`  Limit Price:  ${formatCurrency(details.limitPrice)}`);
+          row('Limit Price: ', formatCurrency(details.limitPrice));
         }
         if (details.stopPrice) {
-          console.log(`  Stop Price:   ${formatCurrency(details.stopPrice)}`);
+          row('Stop Price:  ', formatCurrency(details.stopPrice));
         }
 
-        console.log(`  Time in Force: ${details.expiration.timeInForce}`);
-        console.log(
-          `  Created:      ${new Date(details.createdAt).toLocaleString()}`
-        );
+        row('Time in Force:', details.expiration.timeInForce);
+        row('Created:     ', new Date(details.createdAt).toLocaleString());
 
         if (details.filledQuantity && details.filledQuantity !== '0') {
-          console.log(`\n  Execution:`);
-          console.log(`    Filled Qty: ${details.filledQuantity}`);
-          console.log(
-            `    Avg Price:  ${formatCurrency(details.averagePrice)}`
-          );
+          subheader('Execution');
+          row('Filled Qty:', details.filledQuantity, 4);
+          row('Avg Price: ', formatCurrency(details.averagePrice), 4);
         }
 
         if (details.closedAt) {
-          console.log(
-            `  Closed:       ${new Date(details.closedAt).toLocaleString()}`
-          );
+          row('Closed:      ', new Date(details.closedAt).toLocaleString());
         }
 
         if (details.rejectReason) {
-          console.log(`  Reject Reason: ${details.rejectReason}`);
+          row('Reject Reason:', red(details.rejectReason));
         }
 
         if (details.legs && details.legs.length > 0) {
-          console.log('\n  Legs:');
+          subheader('Legs');
           for (const leg of details.legs) {
             console.log(
               `    ${leg.side} ${leg.instrument.symbol} (${leg.instrument.type})`
             );
             if (leg.ratioQuantity) {
-              console.log(`      Ratio: ${leg.ratioQuantity}`);
+              row('Ratio:', String(leg.ratioQuantity), 6);
             }
           }
         }

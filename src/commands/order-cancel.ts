@@ -17,9 +17,9 @@ export function createOrderCancelCommand(): Command {
       try {
         await cancelOrder(accountId, orderId);
 
-        success(`\nCancellation request submitted for order: ${orderId}\n`);
-        info('Note: Confirm cancellation by checking order status with:');
-        console.log(`  public-cli order ${accountId} ${orderId}\n`);
+        success(`Cancellation request submitted for order: ${orderId}`);
+        console.log();
+        info(`Check status: public-cli order ${accountId} ${orderId}`);
       } catch (err) {
         if (err instanceof NotFoundError) {
           error(err.message);

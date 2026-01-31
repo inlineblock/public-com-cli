@@ -7,7 +7,14 @@ import {
   type QuoteSecurityType,
   type QuoteInstrument,
 } from '../helpers/api.js';
-import { error, success } from '../helpers/output.js';
+import {
+  error,
+  success,
+  row,
+  bold,
+  dim,
+  red,
+} from '../helpers/output.js';
 
 const VALID_QUOTE_TYPES: QuoteSecurityType[] = [
   'EQUITY',
@@ -68,31 +75,38 @@ export function createQuotesCommand(): Command {
             return;
           }
 
-          success(`\nQuotes:\n`);
+          success('Quotes');
+          console.log();
 
           for (const quote of response.quotes) {
             if (quote.outcome !== 'SUCCESS') {
-              console.log(`  ${quote.instrument.symbol}: Failed to get quote`);
+              console.log(`  ${red(quote.instrument.symbol)}: Failed to get quote`);
               continue;
             }
 
             console.log(
-              `  ${quote.instrument.symbol} (${quote.instrument.type})`
+              `  ${bold(quote.instrument.symbol)} ${dim(`(${quote.instrument.type})`)}`
             );
-            console.log(`    Last:     ${formatCurrency(quote.last)}`);
-            console.log(
-              `    Bid:      ${formatCurrency(quote.bid)} x ${formatNumber(quote.bidSize)}`
+            row('Last:    ', bold(formatCurrency(quote.last)), 4);
+            row(
+              'Bid:     ',
+              `${formatCurrency(quote.bid)} ${dim(`x ${formatNumber(quote.bidSize)}`)}`,
+              4
             );
-            console.log(
-              `    Ask:      ${formatCurrency(quote.ask)} x ${formatNumber(quote.askSize)}`
+            row(
+              'Ask:     ',
+              `${formatCurrency(quote.ask)} ${dim(`x ${formatNumber(quote.askSize)}`)}`,
+              4
             );
-            console.log(`    Volume:   ${formatNumber(quote.volume)}`);
+            row('Volume:  ', formatNumber(quote.volume), 4);
             if (quote.openInterest !== undefined) {
-              console.log(`    Open Int: ${formatNumber(quote.openInterest)}`);
+              row('Open Int:', formatNumber(quote.openInterest), 4);
             }
             if (quote.lastTimestamp) {
-              console.log(
-                `    As of:    ${new Date(quote.lastTimestamp).toLocaleString()}`
+              row(
+                'As of:   ',
+                dim(new Date(quote.lastTimestamp).toLocaleString()),
+                4
               );
             }
             console.log();

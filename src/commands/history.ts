@@ -7,7 +7,17 @@ import {
   NotFoundError,
   type Transaction,
 } from '../helpers/api.js';
-import { error, info } from '../helpers/output.js';
+import {
+  error,
+  info,
+  header,
+  row,
+  bold,
+  dim,
+  green,
+  red,
+  cyan,
+} from '../helpers/output.js';
 
 function formatCurrency(value: string): string {
   const num = parseFloat(value);
@@ -24,23 +34,30 @@ function formatDate(timestamp: string): string {
 
 function formatTransaction(tx: Transaction): void {
   const amount = formatCurrency(tx.netAmount);
+  const amountNum = parseFloat(tx.netAmount);
+  const amountColored =
+    tx.direction === 'CREDIT' || amountNum > 0
+      ? green(amount)
+      : amountNum < 0
+        ? red(amount)
+        : amount;
 
-  console.log(`\n  ${formatDate(tx.timestamp)}`);
-  console.log(`    ${tx.type}${tx.subType ? ` / ${tx.subType}` : ''}`);
+  console.log(`\n  ${bold(formatDate(tx.timestamp))}`);
+  console.log(`    ${cyan(tx.type)}${tx.subType ? dim(` / ${tx.subType}`) : ''}`);
   console.log(`    ${tx.description}`);
 
   if (tx.symbol) {
-    console.log(`    Symbol: ${tx.symbol} (${tx.securityType || 'N/A'})`);
+    row('Symbol:', `${bold(tx.symbol)} ${dim(`(${tx.securityType || 'N/A'})`)}`, 4);
   }
 
   if (tx.quantity && tx.side) {
-    console.log(`    ${tx.side} ${tx.quantity} shares`);
+    row('Trade: ', `${tx.side} ${tx.quantity} shares`, 4);
   }
 
-  console.log(`    Amount: ${amount} (${tx.direction})`);
+  row('Amount:', `${amountColored} ${dim(`(${tx.direction})`)}`, 4);
 
   if (tx.fees && parseFloat(tx.fees) !== 0) {
-    console.log(`    Fees: ${formatCurrency(tx.fees)}`);
+    row('Fees:  ', red(formatCurrency(tx.fees)), 4);
   }
 }
 
@@ -90,18 +107,18 @@ export function createHistoryCommand(): Command {
             nextToken: options.nextToken,
           });
 
-          console.log(`\nTransaction History for Account: ${accountId}`);
+          header(`Transaction History: ${accountId}`);
           console.log(
-            `Period: ${formatDate(response.start)} - ${formatDate(response.end)}`
+            `  ${dim('Period:')} ${formatDate(response.start)} - ${formatDate(response.end)}`
           );
 
           if (response.transactions.length === 0) {
-            info('\nNo transactions found for this period.');
+            info('No transactions found for this period.');
             return;
           }
 
           console.log(
-            `\nShowing ${response.transactions.length} transaction${response.transactions.length > 1 ? 's' : ''}:`
+            `\n  ${dim(`Showing ${response.transactions.length} transaction${response.transactions.length > 1 ? 's' : ''}`)}`
           );
 
           for (const tx of response.transactions) {
@@ -109,8 +126,9 @@ export function createHistoryCommand(): Command {
           }
 
           if (response.nextToken) {
-            console.log(
-              `\n  More results available. Use --next-token "${response.nextToken}" to see next page.`
+            console.log();
+            info(
+              `More results available. Use --next-token "${response.nextToken}"`
             );
           }
 

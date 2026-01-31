@@ -6,7 +6,18 @@ import {
   RateLimitError,
   NotFoundError,
 } from '../helpers/api.js';
-import { error } from '../helpers/output.js';
+import {
+  error,
+  header,
+  subheader,
+  row,
+  bold,
+  green,
+  red,
+  yellow,
+  cyan,
+  dim,
+} from '../helpers/output.js';
 
 function formatCurrency(value: string): string {
   const num = parseFloat(value);
@@ -25,8 +36,31 @@ function formatPercent(value: string): string {
 
 function formatGain(value: string, percentage: string): string {
   const numValue = parseFloat(value);
-  const prefix = numValue >= 0 ? '+' : '';
-  return `${prefix}${formatCurrency(value)} (${formatPercent(percentage)})`;
+  const formatted = `${formatCurrency(value)} (${formatPercent(percentage)})`;
+  if (numValue > 0) return green('+' + formatted.substring(1));
+  if (numValue < 0) return red(formatted);
+  return formatted;
+}
+
+function formatStatus(status: string): string {
+  switch (status) {
+    case 'NEW':
+      return cyan('NEW');
+    case 'PENDING':
+      return yellow('PENDING');
+    case 'OPEN':
+      return cyan('OPEN');
+    case 'FILLED':
+      return green('FILLED');
+    case 'PARTIALLY_FILLED':
+      return yellow('PARTIAL');
+    case 'CANCELLED':
+      return yellow('CANCELLED');
+    case 'REJECTED':
+      return red('REJECTED');
+    default:
+      return status;
+  }
 }
 
 export function createPortfolioCommand(): Command {
@@ -37,60 +71,60 @@ export function createPortfolioCommand(): Command {
       try {
         const data = await getPortfolio(accountId);
 
-        console.log(`\nAccount: ${data.accountId} (${data.accountType})\n`);
+        header(`Account: ${data.accountId} (${data.accountType})`);
 
-        console.log('Buying Power:');
-        console.log(
-          `  Cash Only:  ${formatCurrency(data.buyingPower.cashOnlyBuyingPower)}`
-        );
-        console.log(
-          `  Total:      ${formatCurrency(data.buyingPower.buyingPower)}`
-        );
-        console.log(
-          `  Options:    ${formatCurrency(data.buyingPower.optionsBuyingPower)}`
-        );
+        subheader('Buying Power');
+        row('Cash Only:', bold(formatCurrency(data.buyingPower.cashOnlyBuyingPower)));
+        row('Total:    ', bold(formatCurrency(data.buyingPower.buyingPower)));
+        row('Options:  ', bold(formatCurrency(data.buyingPower.optionsBuyingPower)));
 
         if (data.equity.length > 0) {
-          console.log('\nEquity:');
+          subheader('Equity');
           for (const eq of data.equity) {
-            console.log(
-              `  ${eq.type}: ${formatCurrency(eq.value)} (${formatPercent(eq.percentageOfPortfolio)} of portfolio)`
+            const pct = formatPercent(eq.percentageOfPortfolio);
+            row(
+              `${eq.type}:`,
+              `${bold(formatCurrency(eq.value))} ${dim(`(${pct} of portfolio)`)}`
             );
           }
         }
 
         if (data.positions.length > 0) {
-          console.log('\nPositions:');
+          subheader('Positions');
           for (const pos of data.positions) {
             console.log(
-              `\n  ${pos.instrument.symbol} - ${pos.instrument.name || pos.instrument.type}`
+              `\n  ${bold(pos.instrument.symbol)} ${dim('- ' + (pos.instrument.name || pos.instrument.type))}`
             );
-            console.log(`    Quantity:      ${pos.quantity}`);
-            console.log(
-              `    Current Value: ${formatCurrency(pos.currentValue)}`
+            row('Quantity:      ', pos.quantity, 4);
+            row('Current Value: ', bold(formatCurrency(pos.currentValue)), 4);
+            row('Last Price:    ', formatCurrency(pos.lastPrice.lastPrice), 4);
+            row(
+              'Cost Basis:    ',
+              `${formatCurrency(pos.costBasis.totalCost)} ${dim(`(${formatCurrency(pos.costBasis.unitCost)}/share)`)}`,
+              4
             );
-            console.log(
-              `    Last Price:    ${formatCurrency(pos.lastPrice.lastPrice)}`
+            row(
+              'Total Gain:    ',
+              formatGain(pos.instrumentGain.gainValue, pos.instrumentGain.gainPercentage),
+              4
             );
-            console.log(
-              `    Cost Basis:    ${formatCurrency(pos.costBasis.totalCost)} (${formatCurrency(pos.costBasis.unitCost)}/share)`
+            row(
+              'Daily Gain:    ',
+              formatGain(pos.positionDailyGain.gainValue, pos.positionDailyGain.gainPercentage),
+              4
             );
-            console.log(
-              `    Total Gain:    ${formatGain(pos.instrumentGain.gainValue, pos.instrumentGain.gainPercentage)}`
-            );
-            console.log(
-              `    Daily Gain:    ${formatGain(pos.positionDailyGain.gainValue, pos.positionDailyGain.gainPercentage)}`
-            );
-            console.log(
-              `    % of Portfolio: ${formatPercent(pos.percentOfPortfolio)}`
+            row(
+              '% of Portfolio:',
+              formatPercent(pos.percentOfPortfolio),
+              4
             );
           }
         } else {
-          console.log('\nNo positions.');
+          console.log('\n  No positions.');
         }
 
         if (data.orders.length > 0) {
-          console.log('\nOpen Orders:');
+          subheader('Open Orders');
           for (const order of data.orders) {
             const quantityDisplay = order.quantity
               ? order.quantity
@@ -98,34 +132,32 @@ export function createPortfolioCommand(): Command {
                 ? formatCurrency(order.notionalValue)
                 : '';
             console.log(
-              `\n  ${order.side} ${quantityDisplay} ${order.instrument.symbol}`
+              `\n  ${bold(order.side)} ${quantityDisplay} ${bold(order.instrument.symbol)}`
             );
-            console.log(`    Order ID:   ${order.orderId}`);
-            console.log(`    Type:       ${order.type}`);
-            console.log(`    Status:     ${order.status}`);
+            row('Order ID:  ', dim(order.orderId), 4);
+            row('Type:      ', order.type, 4);
+            row('Status:    ', formatStatus(order.status), 4);
             if (order.limitPrice) {
-              console.log(
-                `    Limit:      ${formatCurrency(order.limitPrice)}`
-              );
+              row('Limit:     ', formatCurrency(order.limitPrice), 4);
             }
             if (order.stopPrice) {
-              console.log(`    Stop:       ${formatCurrency(order.stopPrice)}`);
+              row('Stop:      ', formatCurrency(order.stopPrice), 4);
             }
-            console.log(`    Expiration: ${order.expiration.timeInForce}`);
-            console.log(
-              `    Created:    ${new Date(order.createdAt).toLocaleString()}`
-            );
+            row('Expiration:', order.expiration.timeInForce, 4);
+            row('Created:   ', new Date(order.createdAt).toLocaleString(), 4);
             if (order.filledQuantity && order.filledQuantity !== '0') {
-              console.log(
-                `    Filled:     ${order.filledQuantity} @ ${formatCurrency(order.averagePrice)}`
+              row(
+                'Filled:    ',
+                `${order.filledQuantity} @ ${formatCurrency(order.averagePrice)}`,
+                4
               );
             }
             if (order.rejectReason) {
-              console.log(`    Rejected:   ${order.rejectReason}`);
+              row('Rejected:  ', red(order.rejectReason), 4);
             }
           }
         } else {
-          console.log('\nNo open orders.');
+          console.log('\n  No open orders.');
         }
 
         console.log();

@@ -5,7 +5,7 @@ import {
   AuthenticationError,
   RateLimitError,
 } from '../helpers/api.js';
-import { error, success } from '../helpers/output.js';
+import { error, success, row, bold, cyan } from '../helpers/output.js';
 
 function formatGreek(value?: string): string {
   if (!value) return 'N/A';
@@ -40,18 +40,17 @@ export function createOptionGreeksCommand(): Command {
           return;
         }
 
-        success(`\nOption Greeks:\n`);
+        success('Option Greeks');
+        console.log();
 
         for (const item of response.greeks) {
-          console.log(`  ${item.symbol}`);
-          console.log(`    Delta:    ${formatGreek(item.greeks.delta)}`);
-          console.log(`    Gamma:    ${formatGreek(item.greeks.gamma)}`);
-          console.log(`    Theta:    ${formatGreek(item.greeks.theta)}`);
-          console.log(`    Vega:     ${formatGreek(item.greeks.vega)}`);
-          console.log(`    Rho:      ${formatGreek(item.greeks.rho)}`);
-          console.log(
-            `    IV:       ${formatPercent(item.greeks.impliedVolatility)}`
-          );
+          console.log(`  ${bold(item.symbol)}`);
+          row('Delta:', cyan(formatGreek(item.greeks.delta)), 4);
+          row('Gamma:', formatGreek(item.greeks.gamma), 4);
+          row('Theta:', formatGreek(item.greeks.theta), 4);
+          row('Vega: ', formatGreek(item.greeks.vega), 4);
+          row('Rho:  ', formatGreek(item.greeks.rho), 4);
+          row('IV:   ', bold(formatPercent(item.greeks.impliedVolatility)), 4);
           console.log();
         }
       } catch (err) {

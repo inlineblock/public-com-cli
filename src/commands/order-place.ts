@@ -11,7 +11,7 @@ import {
   type MarketSession,
   type OpenCloseIndicator,
 } from '../helpers/api.js';
-import { error, success, warn } from '../helpers/output.js';
+import { error, success, warn, header, row, info } from '../helpers/output.js';
 
 export function createOrderPlaceCommand(): Command {
   const place = new Command('order-place')
@@ -79,7 +79,7 @@ export function createOrderPlaceCommand(): Command {
 
         const orderId = options.orderId || randomUUID();
 
-        warn(`\nPlacing ${side} order for ${symbol.toUpperCase()}...`);
+        warn(`Placing ${side} order for ${symbol.toUpperCase()}...`);
 
         const response = await placeOrder(accountId, {
           orderId,
@@ -101,25 +101,27 @@ export function createOrderPlaceCommand(): Command {
             options.openClose?.toUpperCase() as OpenCloseIndicator,
         });
 
-        success(`\nOrder placed successfully!\n`);
-        console.log(`  Order ID: ${response.orderId}`);
-        console.log(`  Symbol:   ${symbol.toUpperCase()}`);
-        console.log(`  Side:     ${side}`);
-        console.log(`  Type:     ${orderType}`);
+        success('Order placed successfully!');
+        header('Order Details');
+        row('Order ID:', response.orderId);
+        row('Symbol:  ', symbol.toUpperCase());
+        row('Side:    ', side);
+        row('Type:    ', orderType);
         if (options.quantity) {
-          console.log(`  Quantity: ${options.quantity}`);
+          row('Quantity:', options.quantity);
         }
         if (options.amount) {
-          console.log(`  Amount:   $${options.amount}`);
+          row('Amount:  ', `$${options.amount}`);
         }
         if (options.limit) {
-          console.log(`  Limit:    $${options.limit}`);
+          row('Limit:   ', `$${options.limit}`);
         }
         if (options.stop) {
-          console.log(`  Stop:     $${options.stop}`);
+          row('Stop:    ', `$${options.stop}`);
         }
-        console.log(
-          `\nUse 'public-cli order ${accountId} ${response.orderId}' to check status.\n`
+        console.log();
+        info(
+          `Check status: public-cli order ${accountId} ${response.orderId}`
         );
       } catch (err) {
         if (err instanceof AuthenticationError) {
