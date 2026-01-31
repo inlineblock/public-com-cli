@@ -1,12 +1,20 @@
 {
   "name": "public-com-cli",
   "version": "0.1.0",
-  "description": "CLI for Public.com API",
+  "description": "CLI for Public.com API - trading, portfolio management, market data, and more",
   "main": "dist/index.js",
   "bin": {
-    "public-cli": "dist/index.js"
+    "public-cli": "dist/index.js",
+    "public-com-cli": "dist/index.js"
   },
   "type": "module",
+  "files": [
+    "dist/**/*.js",
+    "dist/**/*.d.ts",
+    "dist/**/*.js.map",
+    "README.md",
+    "LICENSE.md"
+  ],
   "scripts": {
     "build": "tsc",
     "build:bundle": "npm run build && esbuild dist/index.js --bundle --platform=node --target=node18 --outfile=dist/bundle.cjs --format=cjs --external:keytar",
@@ -18,6 +26,7 @@
     "format:check": "prettier --check .",
     "lint": "eslint src/",
     "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build",
     "prepare": "npm run build"
   },
   "pkg": {
@@ -28,11 +37,26 @@
       "dist/**/*.js"
     ]
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/inlineblock/public-com-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/inlineblock/public-com-cli/issues"
+  },
+  "homepage": "https://github.com/inlineblock/public-com-cli#readme",
   "keywords": [
     "public.com",
+    "public",
     "cli",
     "trading",
-    "api"
+    "stocks",
+    "options",
+    "crypto",
+    "portfolio",
+    "brokerage",
+    "api",
+    "finance"
   ],
   "author": "",
   "license": "MIT",

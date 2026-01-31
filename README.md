@@ -8,7 +8,15 @@ A command-line interface for interacting with the Public.com API.
 npm install -g public-com-cli
 ```
 
-Or install from source:
+After installation, the CLI is available as both `public-cli` and `public-com-cli`:
+
+```bash
+public-cli --help
+# or
+public-com-cli --help
+```
+
+### Install from Source
 
 ```bash
 git clone https://github.com/inlineblock/public-com-cli.git
@@ -177,6 +185,37 @@ The CLI includes automatic retry logic for server errors:
 - **401 (Unauthorized)**: Automatically refreshes access token and retries
 
 Use `--no-retry` to disable automatic retries.
+
+## Shell Completion
+
+Enable tab completion for commands and options:
+
+### Bash
+
+```bash
+# Add to ~/.bashrc
+public-cli completion bash >> ~/.bashrc
+source ~/.bashrc
+```
+
+### Zsh
+
+```bash
+# Create completions directory and add completion
+mkdir -p ~/.zsh/completions
+public-cli completion zsh > ~/.zsh/completions/_public-cli
+
+# Add to ~/.zshrc (if not already there)
+echo 'fpath=(~/.zsh/completions $fpath)' >> ~/.zshrc
+echo 'autoload -Uz compinit && compinit' >> ~/.zshrc
+source ~/.zshrc
+```
+
+### Fish
+
+```bash
+public-cli completion fish > ~/.config/fish/completions/public-cli.fish
+```
 
 ## Development
 
