@@ -18,19 +18,24 @@ import { createOrderCancelCommand } from './commands/order-cancel.js';
 import { createOptionGreeksCommand } from './commands/option-greeks.js';
 import { createCompletionCommand } from './commands/completion.js';
 import { setRetryEnabled } from './helpers/fetch.js';
+import { checkForUpdates } from './helpers/update-check.js';
+import { VERSION } from './version.js';
 
 const program = new Command();
 
 program
   .name('public-cli')
   .description('CLI for interacting with Public.com API')
-  .version('0.1.1')
+  .version(VERSION)
   .option('--no-retry', 'Disable automatic retries on server errors')
   .hook('preAction', () => {
     const opts = program.opts();
     if (opts.retry === false) {
       setRetryEnabled(false);
     }
+  })
+  .hook('postAction', async () => {
+    await checkForUpdates();
   });
 
 program.addCommand(createAuthenticateCommand());
