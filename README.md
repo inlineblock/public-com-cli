@@ -48,6 +48,32 @@ Remove your stored API key:
 public-cli auth logout
 ```
 
+### Configuration
+
+#### Set API Endpoint
+
+Override the default API endpoint (https://api.public.com/):
+
+```bash
+public-cli config set-endpoint https://custom-api.example.com/
+```
+
+#### Get Current Endpoint
+
+Show the current API endpoint:
+
+```bash
+public-cli config get-endpoint
+```
+
+#### Reset Endpoint
+
+Reset to the default endpoint:
+
+```bash
+public-cli config reset-endpoint
+```
+
 ## Development
 
 ### Prerequisites
