@@ -8,6 +8,9 @@ import { createPortfolioCommand } from './commands/portfolio.js';
 import { createHistoryCommand } from './commands/history.js';
 import { createInstrumentsCommand } from './commands/instruments.js';
 import { createInstrumentCommand } from './commands/instrument.js';
+import { createQuotesCommand } from './commands/quotes.js';
+import { createOptionsExpirationsCommand } from './commands/options-expirations.js';
+import { createOptionsChainCommand } from './commands/options-chain.js';
 import { setRetryEnabled } from './helpers/fetch.js';
 
 const program = new Command();
@@ -31,5 +34,8 @@ program.addCommand(createPortfolioCommand());
 program.addCommand(createHistoryCommand());
 program.addCommand(createInstrumentsCommand());
 program.addCommand(createInstrumentCommand());
+program.addCommand(createQuotesCommand());
+program.addCommand(createOptionsExpirationsCommand());
+program.addCommand(createOptionsChainCommand());
 
 program.parse(process.argv);
