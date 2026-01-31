@@ -4,7 +4,7 @@ import {
   deleteApiKey,
   hasApiKey,
 } from '../authentication/keychain.js';
-import { success, error, info } from '../helpers/output.js';
+import { success, error, info, header, row, bold, dim } from '../helpers/output.js';
 import { isValidApiKey } from '../helpers/validation.js';
 import {
   validateApiKey,
@@ -97,21 +97,21 @@ export function createAuthenticateCommand(): Command {
 
         const { accounts } = await getAccounts();
 
-        success('Authenticated\n');
+        success('Authenticated');
 
         if (accounts.length === 0) {
           info('No accounts found.');
           return;
         }
 
-        console.log('Accounts:');
+        header('Accounts');
         for (const account of accounts) {
-          console.log(`\n  Account ID:       ${account.accountId}`);
-          console.log(`  Account Type:     ${account.accountType}`);
-          console.log(`  Brokerage Type:   ${account.brokerageAccountType}`);
-          console.log(`  Options Level:    ${account.optionsLevel}`);
-          console.log(`  Trade Permissions: ${account.tradePermissions}`);
+          console.log(`\n  ${bold(account.accountId)} ${dim(`(${account.accountType})`)}`);
+          row('Brokerage Type:   ', account.brokerageAccountType, 4);
+          row('Options Level:    ', account.optionsLevel, 4);
+          row('Trade Permissions:', account.tradePermissions, 4);
         }
+        console.log();
       } catch (err) {
         if (err instanceof AuthenticationError) {
           error(`Authentication failed: ${err.message}`);

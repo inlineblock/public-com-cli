@@ -7,7 +7,18 @@ import {
   NotFoundError,
   type SecurityType,
 } from '../helpers/api.js';
-import { error, success } from '../helpers/output.js';
+import {
+  error,
+  success,
+  header,
+  row,
+  subheader,
+  bold,
+  dim,
+  green,
+  yellow,
+  red,
+} from '../helpers/output.js';
 
 const VALID_SECURITY_TYPES: SecurityType[] = [
   'EQUITY',
@@ -35,17 +46,17 @@ function parseSecurityType(value: string): SecurityType {
 function formatTradingStatus(status: string): string {
   switch (status) {
     case 'BUY_AND_SELL':
-      return 'Buy & Sell';
+      return green('Buy & Sell');
     case 'BUY_ONLY':
-      return 'Buy Only';
+      return yellow('Buy Only');
     case 'SELL_ONLY':
-      return 'Sell Only';
+      return yellow('Sell Only');
     case 'LIQUIDATION_ONLY':
-      return 'Liquidation Only';
+      return red('Liquidation Only');
     case 'DISABLED':
-      return 'Disabled';
+      return red('Disabled');
     case 'NONE':
-      return 'None';
+      return dim('None');
     default:
       return status;
   }
@@ -65,27 +76,19 @@ export function createInstrumentCommand(): Command {
       try {
         const data = await getInstrument(symbol.toUpperCase(), options.type);
 
-        success(`\nInstrument: ${data.instrument.symbol}\n`);
+        success(`Instrument: ${bold(data.instrument.symbol)}`);
+        header(`${data.instrument.symbol} (${data.instrument.type})`);
 
-        console.log(`  Type:              ${data.instrument.type}`);
-        console.log(
-          `  Trading:           ${formatTradingStatus(data.trading)}`
-        );
-        console.log(
-          `  Fractional:        ${formatTradingStatus(data.fractionalTrading)}`
-        );
-        console.log(
-          `  Options:           ${formatTradingStatus(data.optionTrading)}`
-        );
-        console.log(
-          `  Option Spreads:    ${formatTradingStatus(data.optionSpreadTrading)}`
-        );
+        row('Trading:      ', formatTradingStatus(data.trading));
+        row('Fractional:   ', formatTradingStatus(data.fractionalTrading));
+        row('Options:      ', formatTradingStatus(data.optionTrading));
+        row('Option Spreads:', formatTradingStatus(data.optionSpreadTrading));
 
         if (data.instrumentDetails) {
-          console.log('\n  Details:');
+          subheader('Details');
           const details = data.instrumentDetails as Record<string, unknown>;
           for (const [key, value] of Object.entries(details)) {
-            console.log(`    ${key}: ${JSON.stringify(value)}`);
+            row(`${key}:`, String(value), 4);
           }
         }
 

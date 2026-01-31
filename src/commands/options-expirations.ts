@@ -6,7 +6,7 @@ import {
   RateLimitError,
   type OptionUnderlyingType,
 } from '../helpers/api.js';
-import { error, success } from '../helpers/output.js';
+import { error, success, bold, dim } from '../helpers/output.js';
 
 const VALID_UNDERLYING_TYPES: OptionUnderlyingType[] = [
   'EQUITY',
@@ -39,7 +39,8 @@ export function createOptionsExpirationsCommand(): Command {
             type,
           });
 
-          success(`\nOption Expirations for ${response.baseSymbol}:\n`);
+          success(`Option Expirations for ${bold(response.baseSymbol)}`);
+          console.log();
 
           if (response.expirations.length === 0) {
             console.log('  No expiration dates available.');
@@ -48,14 +49,20 @@ export function createOptionsExpirationsCommand(): Command {
 
           for (const expiration of response.expirations) {
             const date = new Date(expiration);
-            console.log(
-              `  ${expiration}  (${date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })})`
-            );
+            const formatted = date.toLocaleDateString('en-US', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            });
+            console.log(`  ${bold(expiration)}  ${dim(`(${formatted})`)}`);
           }
 
+          console.log();
           console.log(
-            `\n  Total: ${response.expirations.length} expiration dates\n`
+            `  ${dim(`Total: ${response.expirations.length} expiration dates`)}`
           );
+          console.log();
         } catch (err) {
           if (err instanceof AuthenticationError) {
             error(err.message);
