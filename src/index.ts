@@ -16,6 +16,7 @@ import { createOrderPlaceCommand } from './commands/order-place.js';
 import { createOrderCommand } from './commands/order.js';
 import { createOrderCancelCommand } from './commands/order-cancel.js';
 import { createOptionGreeksCommand } from './commands/option-greeks.js';
+import { createCompletionCommand } from './commands/completion.js';
 import { setRetryEnabled } from './helpers/fetch.js';
 
 const program = new Command();
@@ -47,5 +48,6 @@ program.addCommand(createOrderPlaceCommand());
 program.addCommand(createOrderCommand());
 program.addCommand(createOrderCancelCommand());
 program.addCommand(createOptionGreeksCommand());
+program.addCommand(createCompletionCommand());
 
 program.parse(process.argv);
