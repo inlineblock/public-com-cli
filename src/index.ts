@@ -11,6 +11,11 @@ import { createInstrumentCommand } from './commands/instrument.js';
 import { createQuotesCommand } from './commands/quotes.js';
 import { createOptionsExpirationsCommand } from './commands/options-expirations.js';
 import { createOptionsChainCommand } from './commands/options-chain.js';
+import { createOrderPreflightCommand } from './commands/order-preflight.js';
+import { createOrderPlaceCommand } from './commands/order-place.js';
+import { createOrderCommand } from './commands/order.js';
+import { createOrderCancelCommand } from './commands/order-cancel.js';
+import { createOptionGreeksCommand } from './commands/option-greeks.js';
 import { setRetryEnabled } from './helpers/fetch.js';
 
 const program = new Command();
@@ -37,5 +42,10 @@ program.addCommand(createInstrumentCommand());
 program.addCommand(createQuotesCommand());
 program.addCommand(createOptionsExpirationsCommand());
 program.addCommand(createOptionsChainCommand());
+program.addCommand(createOrderPreflightCommand());
+program.addCommand(createOrderPlaceCommand());
+program.addCommand(createOrderCommand());
+program.addCommand(createOrderCancelCommand());
+program.addCommand(createOptionGreeksCommand());
 
 program.parse(process.argv);

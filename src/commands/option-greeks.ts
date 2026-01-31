@@ -1,0 +1,74 @@
+import { Command } from 'commander';
+import {
+  getOptionGreeks,
+  ApiError,
+  AuthenticationError,
+  RateLimitError,
+} from '../helpers/api.js';
+import { error, success } from '../helpers/output.js';
+
+function formatGreek(value?: string): string {
+  if (!value) return 'N/A';
+  const num = parseFloat(value);
+  if (isNaN(num)) return value;
+  return num.toFixed(4);
+}
+
+function formatPercent(value?: string): string {
+  if (!value) return 'N/A';
+  const num = parseFloat(value);
+  if (isNaN(num)) return value;
+  return `${(num * 100).toFixed(2)}%`;
+}
+
+export function createOptionGreeksCommand(): Command {
+  const greeks = new Command('option-greeks')
+    .description('Get option Greeks for one or more option symbols')
+    .argument('<accountId>', 'The account ID')
+    .argument('<symbols...>', 'Option symbols in OSI format (max 250)')
+    .action(async (accountId: string, symbols: string[]) => {
+      try {
+        if (symbols.length > 250) {
+          error('Maximum 250 symbols per request.');
+          process.exit(1);
+        }
+
+        const response = await getOptionGreeks(accountId, symbols);
+
+        if (response.greeks.length === 0) {
+          console.log('\nNo Greeks data returned.');
+          return;
+        }
+
+        success(`\nOption Greeks:\n`);
+
+        for (const item of response.greeks) {
+          console.log(`  ${item.symbol}`);
+          console.log(`    Delta:    ${formatGreek(item.greeks.delta)}`);
+          console.log(`    Gamma:    ${formatGreek(item.greeks.gamma)}`);
+          console.log(`    Theta:    ${formatGreek(item.greeks.theta)}`);
+          console.log(`    Vega:     ${formatGreek(item.greeks.vega)}`);
+          console.log(`    Rho:      ${formatGreek(item.greeks.rho)}`);
+          console.log(
+            `    IV:       ${formatPercent(item.greeks.impliedVolatility)}`
+          );
+          console.log();
+        }
+      } catch (err) {
+        if (err instanceof AuthenticationError) {
+          error(err.message);
+        } else if (err instanceof RateLimitError) {
+          error('Too many requests. Please try again later.');
+        } else if (err instanceof ApiError) {
+          error(`Failed to get option Greeks: ${err.message}`);
+        } else {
+          error(
+            `Failed to get option Greeks: ${err instanceof Error ? err.message : 'Unknown error'}`
+          );
+        }
+        process.exit(1);
+      }
+    });
+
+  return greeks;
+}
