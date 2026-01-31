@@ -10,7 +10,9 @@ import {
   validateApiKey,
   clearTokens,
   getAccounts,
-  ApiClientError,
+  ApiError,
+  AuthenticationError,
+  RateLimitError,
 } from '../helpers/api.js';
 
 export function createAuthenticateCommand(): Command {
@@ -40,8 +42,12 @@ export function createAuthenticateCommand(): Command {
 
         success('Authenticated successfully. API key stored securely.');
       } catch (err) {
-        if (err instanceof ApiClientError) {
+        if (err instanceof AuthenticationError) {
           error(`Authentication failed: ${err.message}`);
+        } else if (err instanceof RateLimitError) {
+          error('Too many requests. Please try again later.');
+        } else if (err instanceof ApiError) {
+          error(`API error: ${err.message}`);
         } else {
           error(
             `Failed to authenticate: ${err instanceof Error ? err.message : 'Unknown error'}`
@@ -107,7 +113,11 @@ export function createAuthenticateCommand(): Command {
           console.log(`  Trade Permissions: ${account.tradePermissions}`);
         }
       } catch (err) {
-        if (err instanceof ApiClientError) {
+        if (err instanceof AuthenticationError) {
+          error(`Authentication failed: ${err.message}`);
+        } else if (err instanceof RateLimitError) {
+          error('Too many requests. Please try again later.');
+        } else if (err instanceof ApiError) {
           error(`Failed to fetch account info: ${err.message}`);
         } else {
           error(
