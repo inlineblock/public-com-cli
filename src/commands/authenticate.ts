@@ -6,6 +6,12 @@ import {
 } from '../authentication/keychain.js';
 import { success, error, info } from '../helpers/output.js';
 import { isValidApiKey } from '../helpers/validation.js';
+import {
+  validateApiKey,
+  clearTokens,
+  getAccounts,
+  ApiClientError,
+} from '../helpers/api.js';
 
 export function createAuthenticateCommand(): Command {
   const auth = new Command('auth').description(
@@ -14,7 +20,7 @@ export function createAuthenticateCommand(): Command {
 
   auth
     .command('login')
-    .description('Store your Public.com API key securely')
+    .description('Authenticate with your Public.com API key')
     .requiredOption('-k, --key <apiKey>', 'Your Public.com API key')
     .action(async (options: { key: string }) => {
       try {
@@ -27,30 +33,41 @@ export function createAuthenticateCommand(): Command {
           process.exit(1);
         }
 
+        info('Validating API key...');
+
+        await validateApiKey(apiKey);
         await storeApiKey(apiKey);
-        success('API key stored securely in system keychain.');
+
+        success('Authenticated successfully. API key stored securely.');
       } catch (err) {
-        error(
-          `Failed to store API key: ${err instanceof Error ? err.message : 'Unknown error'}`
-        );
+        if (err instanceof ApiClientError) {
+          error(`Authentication failed: ${err.message}`);
+        } else {
+          error(
+            `Failed to authenticate: ${err instanceof Error ? err.message : 'Unknown error'}`
+          );
+        }
         process.exit(1);
       }
     });
 
   auth
     .command('logout')
-    .description('Remove stored API key from system keychain')
+    .description('Remove stored credentials from system keychain')
     .action(async () => {
       try {
-        const deleted = await deleteApiKey();
-        if (deleted) {
-          success('API key removed from system keychain.');
+        const hadKey = await hasApiKey();
+
+        await Promise.all([deleteApiKey(), clearTokens()]);
+
+        if (hadKey) {
+          success('Logged out successfully. Credentials removed.');
         } else {
-          info('No API key was stored.');
+          info('No credentials were stored.');
         }
       } catch (err) {
         error(
-          `Failed to remove API key: ${err instanceof Error ? err.message : 'Unknown error'}`
+          `Failed to logout: ${err instanceof Error ? err.message : 'Unknown error'}`
         );
         process.exit(1);
       }
@@ -58,21 +75,45 @@ export function createAuthenticateCommand(): Command {
 
   auth
     .command('status')
-    .description('Check if an API key is stored')
+    .description('Check authentication status and display account info')
     .action(async () => {
       try {
         const hasKey = await hasApiKey();
-        if (hasKey) {
-          success('API key is configured.');
-        } else {
+
+        if (!hasKey) {
           info(
-            'No API key stored. Run "public-cli auth login -k <key>" to authenticate.'
+            'Not authenticated. Run "public-cli auth login -k <key>" to authenticate.'
           );
+          process.exit(0);
+        }
+
+        info('Fetching account information...');
+
+        const { accounts } = await getAccounts();
+
+        success('Authenticated\n');
+
+        if (accounts.length === 0) {
+          info('No accounts found.');
+          return;
+        }
+
+        console.log('Accounts:');
+        for (const account of accounts) {
+          console.log(`\n  Account ID:       ${account.accountId}`);
+          console.log(`  Account Type:     ${account.accountType}`);
+          console.log(`  Brokerage Type:   ${account.brokerageAccountType}`);
+          console.log(`  Options Level:    ${account.optionsLevel}`);
+          console.log(`  Trade Permissions: ${account.tradePermissions}`);
         }
       } catch (err) {
-        error(
-          `Failed to check authentication status: ${err instanceof Error ? err.message : 'Unknown error'}`
-        );
+        if (err instanceof ApiClientError) {
+          error(`Failed to fetch account info: ${err.message}`);
+        } else {
+          error(
+            `Failed to check status: ${err instanceof Error ? err.message : 'Unknown error'}`
+          );
+        }
         process.exit(1);
       }
     });
