@@ -92,8 +92,13 @@ export function createPortfolioCommand(): Command {
         if (data.orders.length > 0) {
           console.log('\nOpen Orders:');
           for (const order of data.orders) {
+            const quantityDisplay = order.quantity
+              ? order.quantity
+              : order.notionalValue
+                ? formatCurrency(order.notionalValue)
+                : '';
             console.log(
-              `\n  ${order.side} ${order.quantity} ${order.instrument.symbol}`
+              `\n  ${order.side} ${quantityDisplay} ${order.instrument.symbol}`
             );
             console.log(`    Order ID:   ${order.orderId}`);
             console.log(`    Type:       ${order.type}`);
