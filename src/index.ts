@@ -3,6 +3,7 @@
 import { Command } from 'commander';
 import { createAuthenticateCommand } from './commands/authenticate.js';
 import { createConfigCommand } from './commands/config.js';
+import { createAccountsCommand } from './commands/accounts.js';
 import { setRetryEnabled } from './helpers/fetch.js';
 
 const program = new Command();
@@ -21,5 +22,6 @@ program
 
 program.addCommand(createAuthenticateCommand());
 program.addCommand(createConfigCommand());
+program.addCommand(createAccountsCommand());
 
 program.parse(process.argv);
