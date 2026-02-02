@@ -17,6 +17,8 @@ import {
   yellow,
   cyan,
   dim,
+  isJsonMode,
+  outputJson,
 } from '../helpers/output.js';
 
 function formatCurrency(value: string): string {
@@ -71,12 +73,23 @@ export function createPortfolioCommand(): Command {
       try {
         const data = await getPortfolio(accountId);
 
+        if (isJsonMode()) {
+          outputJson(data);
+          return;
+        }
+
         header(`Account: ${data.accountId} (${data.accountType})`);
 
         subheader('Buying Power');
-        row('Cash Only:', bold(formatCurrency(data.buyingPower.cashOnlyBuyingPower)));
+        row(
+          'Cash Only:',
+          bold(formatCurrency(data.buyingPower.cashOnlyBuyingPower))
+        );
         row('Total:    ', bold(formatCurrency(data.buyingPower.buyingPower)));
-        row('Options:  ', bold(formatCurrency(data.buyingPower.optionsBuyingPower)));
+        row(
+          'Options:  ',
+          bold(formatCurrency(data.buyingPower.optionsBuyingPower))
+        );
 
         if (data.equity.length > 0) {
           subheader('Equity');
@@ -105,19 +118,21 @@ export function createPortfolioCommand(): Command {
             );
             row(
               'Total Gain:    ',
-              formatGain(pos.instrumentGain.gainValue, pos.instrumentGain.gainPercentage),
+              formatGain(
+                pos.instrumentGain.gainValue,
+                pos.instrumentGain.gainPercentage
+              ),
               4
             );
             row(
               'Daily Gain:    ',
-              formatGain(pos.positionDailyGain.gainValue, pos.positionDailyGain.gainPercentage),
+              formatGain(
+                pos.positionDailyGain.gainValue,
+                pos.positionDailyGain.gainPercentage
+              ),
               4
             );
-            row(
-              '% of Portfolio:',
-              formatPercent(pos.percentOfPortfolio),
-              4
-            );
+            row('% of Portfolio:', formatPercent(pos.percentOfPortfolio), 4);
           }
         } else {
           console.log('\n  No positions.');

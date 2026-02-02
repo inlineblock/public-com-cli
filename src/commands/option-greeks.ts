@@ -5,7 +5,15 @@ import {
   AuthenticationError,
   RateLimitError,
 } from '../helpers/api.js';
-import { error, success, row, bold, cyan } from '../helpers/output.js';
+import {
+  error,
+  success,
+  row,
+  bold,
+  cyan,
+  isJsonMode,
+  outputJson,
+} from '../helpers/output.js';
 
 function formatGreek(value?: string): string {
   if (!value) return 'N/A';
@@ -34,6 +42,11 @@ export function createOptionGreeksCommand(): Command {
         }
 
         const response = await getOptionGreeks(accountId, symbols);
+
+        if (isJsonMode()) {
+          outputJson(response.greeks);
+          return;
+        }
 
         if (response.greeks.length === 0) {
           console.log('\nNo Greeks data returned.');

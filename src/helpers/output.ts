@@ -1,3 +1,18 @@
+// JSON mode state
+let jsonMode = false;
+
+export function setJsonMode(enabled: boolean): void {
+  jsonMode = enabled;
+}
+
+export function isJsonMode(): boolean {
+  return jsonMode;
+}
+
+export function outputJson(data: unknown): void {
+  console.log(JSON.stringify(data, null, 2));
+}
+
 // ANSI color codes
 const colors = {
   reset: '\x1b[0m',

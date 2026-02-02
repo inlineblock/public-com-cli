@@ -17,6 +17,8 @@ import {
   green,
   red,
   cyan,
+  isJsonMode,
+  outputJson,
 } from '../helpers/output.js';
 
 function formatCurrency(value: string): string {
@@ -43,11 +45,17 @@ function formatTransaction(tx: Transaction): void {
         : amount;
 
   console.log(`\n  ${bold(formatDate(tx.timestamp))}`);
-  console.log(`    ${cyan(tx.type)}${tx.subType ? dim(` / ${tx.subType}`) : ''}`);
+  console.log(
+    `    ${cyan(tx.type)}${tx.subType ? dim(` / ${tx.subType}`) : ''}`
+  );
   console.log(`    ${tx.description}`);
 
   if (tx.symbol) {
-    row('Symbol:', `${bold(tx.symbol)} ${dim(`(${tx.securityType || 'N/A'})`)}`, 4);
+    row(
+      'Symbol:',
+      `${bold(tx.symbol)} ${dim(`(${tx.securityType || 'N/A'})`)}`,
+      4
+    );
   }
 
   if (tx.quantity && tx.side) {
@@ -106,6 +114,11 @@ export function createHistoryCommand(): Command {
             pageSize: options.limit,
             nextToken: options.nextToken,
           });
+
+          if (isJsonMode()) {
+            outputJson(response);
+            return;
+          }
 
           header(`Transaction History: ${accountId}`);
           console.log(

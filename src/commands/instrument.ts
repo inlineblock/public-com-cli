@@ -18,6 +18,8 @@ import {
   green,
   yellow,
   red,
+  isJsonMode,
+  outputJson,
 } from '../helpers/output.js';
 
 const VALID_SECURITY_TYPES: SecurityType[] = [
@@ -75,6 +77,11 @@ export function createInstrumentCommand(): Command {
     .action(async (symbol: string, options: { type: SecurityType }) => {
       try {
         const data = await getInstrument(symbol.toUpperCase(), options.type);
+
+        if (isJsonMode()) {
+          outputJson(data);
+          return;
+        }
 
         success(`Instrument: ${bold(data.instrument.symbol)}`);
         header(`${data.instrument.symbol} (${data.instrument.type})`);

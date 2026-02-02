@@ -7,7 +7,7 @@ import {
   type SecurityType,
   type TradingStatus,
 } from '../helpers/api.js';
-import { error, success } from '../helpers/output.js';
+import { error, success, isJsonMode, outputJson } from '../helpers/output.js';
 
 const VALID_SECURITY_TYPES: SecurityType[] = [
   'EQUITY',
@@ -118,6 +118,11 @@ export function createInstrumentsCommand(): Command {
             optionTradingFilter: options.options,
             optionSpreadTradingFilter: options.spreads,
           });
+
+          if (isJsonMode()) {
+            outputJson(response.instruments);
+            return;
+          }
 
           if (response.instruments.length === 0) {
             console.log('\nNo instruments found matching the criteria.');

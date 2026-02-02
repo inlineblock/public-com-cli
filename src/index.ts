@@ -19,6 +19,7 @@ import { createOptionGreeksCommand } from './commands/option-greeks.js';
 import { createCompletionCommand } from './commands/completion.js';
 import { setRetryEnabled } from './helpers/fetch.js';
 import { checkForUpdates } from './helpers/update-check.js';
+import { setJsonMode } from './helpers/output.js';
 import { VERSION } from './version.js';
 
 const program = new Command();
@@ -28,10 +29,14 @@ program
   .description('CLI for interacting with Public.com API')
   .version(VERSION)
   .option('--no-retry', 'Disable automatic retries on server errors')
+  .option('--json', 'Output results as JSON')
   .hook('preAction', () => {
     const opts = program.opts();
     if (opts.retry === false) {
       setRetryEnabled(false);
+    }
+    if (opts.json) {
+      setJsonMode(true);
     }
   })
   .hook('postAction', async () => {

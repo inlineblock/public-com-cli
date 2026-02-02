@@ -11,7 +11,16 @@ import {
   type MarketSession,
   type OpenCloseIndicator,
 } from '../helpers/api.js';
-import { error, success, warn, header, row, info } from '../helpers/output.js';
+import {
+  error,
+  success,
+  warn,
+  header,
+  row,
+  info,
+  isJsonMode,
+  outputJson,
+} from '../helpers/output.js';
 
 export function createOrderPlaceCommand(): Command {
   const place = new Command('order-place')
@@ -79,7 +88,9 @@ export function createOrderPlaceCommand(): Command {
 
         const orderId = options.orderId || randomUUID();
 
-        warn(`Placing ${side} order for ${symbol.toUpperCase()}...`);
+        if (!isJsonMode()) {
+          warn(`Placing ${side} order for ${symbol.toUpperCase()}...`);
+        }
 
         const response = await placeOrder(accountId, {
           orderId,
@@ -101,6 +112,11 @@ export function createOrderPlaceCommand(): Command {
             options.openClose?.toUpperCase() as OpenCloseIndicator,
         });
 
+        if (isJsonMode()) {
+          outputJson(response);
+          return;
+        }
+
         success('Order placed successfully!');
         header('Order Details');
         row('Order ID:', response.orderId);
@@ -120,9 +136,7 @@ export function createOrderPlaceCommand(): Command {
           row('Stop:    ', `$${options.stop}`);
         }
         console.log();
-        info(
-          `Check status: public-cli order ${accountId} ${response.orderId}`
-        );
+        info(`Check status: public-cli order ${accountId} ${response.orderId}`);
       } catch (err) {
         if (err instanceof AuthenticationError) {
           error(err.message);

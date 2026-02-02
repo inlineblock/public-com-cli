@@ -4,7 +4,17 @@ import {
   deleteApiKey,
   hasApiKey,
 } from '../authentication/keychain.js';
-import { success, error, info, header, row, bold, dim } from '../helpers/output.js';
+import {
+  success,
+  error,
+  info,
+  header,
+  row,
+  bold,
+  dim,
+  isJsonMode,
+  outputJson,
+} from '../helpers/output.js';
 import { isValidApiKey } from '../helpers/validation.js';
 import {
   validateApiKey,
@@ -14,6 +24,7 @@ import {
   AuthenticationError,
   RateLimitError,
 } from '../helpers/api.js';
+import { promptSecret } from '../helpers/prompt.js';
 
 export function createAuthenticateCommand(): Command {
   const auth = new Command('auth').description(
@@ -23,10 +34,22 @@ export function createAuthenticateCommand(): Command {
   auth
     .command('login')
     .description('Authenticate with your Public.com API key')
-    .requiredOption('-k, --key <apiKey>', 'Your Public.com API key')
-    .action(async (options: { key: string }) => {
+    .option('-k, --key <apiKey>', 'Your Public.com API key')
+    .action(async (options: { key?: string }) => {
       try {
-        const apiKey = options.key.trim();
+        let apiKey: string;
+
+        if (options.key) {
+          apiKey = options.key.trim();
+        } else {
+          console.log();
+          console.log(dim('To get your API key:'));
+          console.log(dim('  1. Log into your Public.com account'));
+          console.log(dim('  2. Go to Settings > API'));
+          console.log(dim('  3. Generate a secret key'));
+          console.log();
+          apiKey = await promptSecret('Enter API key: ');
+        }
 
         if (!isValidApiKey(apiKey)) {
           error(
@@ -87,15 +110,26 @@ export function createAuthenticateCommand(): Command {
         const hasKey = await hasApiKey();
 
         if (!hasKey) {
+          if (isJsonMode()) {
+            outputJson({ authenticated: false });
+            return;
+          }
           info(
-            'Not authenticated. Run "public-cli auth login -k <key>" to authenticate.'
+            'Not authenticated. Run "public-cli auth login" to authenticate.'
           );
           process.exit(0);
         }
 
-        info('Fetching account information...');
+        if (!isJsonMode()) {
+          info('Fetching account information...');
+        }
 
         const { accounts } = await getAccounts();
+
+        if (isJsonMode()) {
+          outputJson({ authenticated: true, accounts });
+          return;
+        }
 
         success('Authenticated');
 
@@ -106,7 +140,9 @@ export function createAuthenticateCommand(): Command {
 
         header('Accounts');
         for (const account of accounts) {
-          console.log(`\n  ${bold(account.accountId)} ${dim(`(${account.accountType})`)}`);
+          console.log(
+            `\n  ${bold(account.accountId)} ${dim(`(${account.accountType})`)}`
+          );
           row('Brokerage Type:   ', account.brokerageAccountType, 4);
           row('Options Level:    ', account.optionsLevel, 4);
           row('Trade Permissions:', account.tradePermissions, 4);

@@ -6,7 +6,14 @@ import {
   RateLimitError,
   type OptionUnderlyingType,
 } from '../helpers/api.js';
-import { error, success, bold, dim } from '../helpers/output.js';
+import {
+  error,
+  success,
+  bold,
+  dim,
+  isJsonMode,
+  outputJson,
+} from '../helpers/output.js';
 
 const VALID_UNDERLYING_TYPES: OptionUnderlyingType[] = [
   'EQUITY',
@@ -38,6 +45,11 @@ export function createOptionsExpirationsCommand(): Command {
             symbol: symbol.toUpperCase(),
             type,
           });
+
+          if (isJsonMode()) {
+            outputJson(response);
+            return;
+          }
 
           success(`Option Expirations for ${bold(response.baseSymbol)}`);
           console.log();

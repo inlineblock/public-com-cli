@@ -1,6 +1,17 @@
 # Public.com CLI
 
-A command-line interface for interacting with the Public.com API.
+A command-line interface for the [Public.com Trading API](https://public.com/api). Trade stocks, ETFs, options, and crypto directly from your terminal.
+
+## Features
+
+- **Portfolio Management** - View positions, buying power, and open orders
+- **Market Data** - Real-time quotes, option chains, and Greeks
+- **Order Execution** - Place, preview, and cancel orders
+- **Transaction History** - View past trades and account activity
+- **Secure Authentication** - API keys stored in system keychain (not plain text)
+- **JSON Output** - Machine-readable output for scripting (`--json` flag)
+- **Shell Completion** - Tab completion for Bash, Zsh, and Fish
+- **Auto-Retry** - Automatic retry with backoff for rate limits and server errors
 
 ## Installation
 
@@ -29,8 +40,8 @@ npm link
 ## Quick Start
 
 ```bash
-# Authenticate with your API key
-public-cli auth login -k <your-api-key>
+# Authenticate (interactive prompt hides your key)
+public-cli auth login
 
 # List your accounts
 public-cli accounts
@@ -38,8 +49,11 @@ public-cli accounts
 # View portfolio
 public-cli portfolio <accountId>
 
-# Get a quote
+# Get quotes
 public-cli quotes <accountId> AAPL TSLA
+
+# Place an order
+public-cli order-place <accountId> AAPL -s BUY -T MARKET -q 1
 ```
 
 ## Commands
@@ -47,7 +61,10 @@ public-cli quotes <accountId> AAPL TSLA
 ### Authentication
 
 ```bash
-# Store your API key (validates against the API)
+# Interactive login (recommended - key won't appear in shell history)
+public-cli auth login
+
+# Or provide key directly
 public-cli auth login -k <your-api-key>
 
 # Check authentication status and view account info
@@ -56,6 +73,8 @@ public-cli auth status
 # Remove stored credentials
 public-cli auth logout
 ```
+
+To get your API key: Log into [Public.com](https://public.com), go to Settings > API, and generate a secret key.
 
 ### Configuration
 
@@ -172,9 +191,25 @@ public-cli order-cancel <accountId> <orderId>
 
 | Option          | Description                                |
 | --------------- | ------------------------------------------ |
+| `--json`        | Output results as JSON for scripting       |
 | `--no-retry`    | Disable automatic retries on server errors |
 | `-V, --version` | Output version number                      |
 | `-h, --help`    | Display help                               |
+
+### JSON Output
+
+Use the `--json` flag to get machine-readable output:
+
+```bash
+# Get portfolio as JSON
+public-cli --json portfolio <accountId>
+
+# Pipe to jq for filtering
+public-cli --json quotes <accountId> AAPL | jq '.[] | .last'
+
+# Use in scripts
+BALANCE=$(public-cli --json portfolio <accountId> | jq -r '.buyingPower.buyingPower')
+```
 
 ## Error Handling
 

@@ -10,7 +10,15 @@ import {
   type MarketSession,
   type OpenCloseIndicator,
 } from '../helpers/api.js';
-import { error, success, header, row, subheader } from '../helpers/output.js';
+import {
+  error,
+  success,
+  header,
+  row,
+  subheader,
+  isJsonMode,
+  outputJson,
+} from '../helpers/output.js';
 
 function formatCurrency(value?: string): string {
   if (!value) return 'N/A';
@@ -101,6 +109,11 @@ export function createOrderPreflightCommand(): Command {
             options.openClose?.toUpperCase() as OpenCloseIndicator,
         });
 
+        if (isJsonMode()) {
+          outputJson(response);
+          return;
+        }
+
         success(`Order Preflight for ${symbol.toUpperCase()}`);
         header('Cost Estimate');
 
@@ -129,7 +142,10 @@ export function createOrderPreflightCommand(): Command {
           row('Est. Proceeds:   ', formatCurrency(response.estimatedProceeds));
         }
 
-        row('Buying Power Req:', formatCurrency(response.buyingPowerRequirement));
+        row(
+          'Buying Power Req:',
+          formatCurrency(response.buyingPowerRequirement)
+        );
 
         if (response.marginRequirement) {
           if (response.marginRequirement.initialRequirement) {

@@ -16,6 +16,8 @@ import {
   red,
   yellow,
   cyan,
+  isJsonMode,
+  outputJson,
 } from '../helpers/output.js';
 
 function formatCurrency(value?: string): string {
@@ -60,11 +62,21 @@ export function createOrderCommand(): Command {
       try {
         const details = await getOrder(accountId, orderId);
 
+        if (isJsonMode()) {
+          outputJson(details);
+          return;
+        }
+
         success('Order Details');
-        header(`${details.instrument.symbol} - ${details.side} ${details.type}`);
+        header(
+          `${details.instrument.symbol} - ${details.side} ${details.type}`
+        );
 
         row('Order ID:    ', details.orderId);
-        row('Symbol:      ', `${details.instrument.symbol} (${details.instrument.type})`);
+        row(
+          'Symbol:      ',
+          `${details.instrument.symbol} (${details.instrument.type})`
+        );
         row('Side:        ', details.side);
         row('Type:        ', details.type);
         row('Status:      ', formatStatus(details.status));

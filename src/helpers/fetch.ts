@@ -6,6 +6,9 @@ import {
   isTokenExpired,
   deleteToken,
 } from '../authentication/token.js';
+import { VERSION } from '../version.js';
+
+const USER_AGENT = `public-com-cli/${VERSION} (https://github.com/inlineblock/public-com-cli)`;
 
 const TOKEN_VALIDITY_MINUTES = 120;
 const MAX_RETRIES = 3;
@@ -82,6 +85,7 @@ async function fetchAccessToken(
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'User-Agent': USER_AGENT,
     },
     body: JSON.stringify({
       validityInMinutes: TOKEN_VALIDITY_MINUTES,
@@ -189,6 +193,7 @@ export async function authenticatedFetch<T>(
 
       const requestHeaders: Record<string, string> = {
         'Content-Type': 'application/json',
+        'User-Agent': USER_AGENT,
         Authorization: `Bearer ${accessToken}`,
         ...headers,
       };

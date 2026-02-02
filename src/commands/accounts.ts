@@ -5,7 +5,16 @@ import {
   AuthenticationError,
   RateLimitError,
 } from '../helpers/api.js';
-import { success, error, info, row, bold, dim } from '../helpers/output.js';
+import {
+  success,
+  error,
+  info,
+  row,
+  bold,
+  dim,
+  isJsonMode,
+  outputJson,
+} from '../helpers/output.js';
 
 export function createAccountsCommand(): Command {
   const accounts = new Command('accounts')
@@ -13,6 +22,11 @@ export function createAccountsCommand(): Command {
     .action(async () => {
       try {
         const { accounts } = await getAccounts();
+
+        if (isJsonMode()) {
+          outputJson(accounts);
+          return;
+        }
 
         if (accounts.length === 0) {
           info('No accounts found.');
@@ -25,7 +39,9 @@ export function createAccountsCommand(): Command {
         console.log();
 
         for (const account of accounts) {
-          console.log(`  ${bold(account.accountId)} ${dim(`(${account.accountType})`)}`);
+          console.log(
+            `  ${bold(account.accountId)} ${dim(`(${account.accountType})`)}`
+          );
           row('Brokerage Type:   ', account.brokerageAccountType, 4);
           row('Options Level:    ', account.optionsLevel, 4);
           row('Trade Permissions:', account.tradePermissions, 4);

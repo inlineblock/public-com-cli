@@ -7,7 +7,7 @@ import {
   type OptionUnderlyingType,
   type OptionQuote,
 } from '../helpers/api.js';
-import { error, success } from '../helpers/output.js';
+import { error, success, isJsonMode, outputJson } from '../helpers/output.js';
 
 const VALID_UNDERLYING_TYPES: OptionUnderlyingType[] = [
   'EQUITY',
@@ -91,6 +91,11 @@ export function createOptionsChainCommand(): Command {
             { symbol: symbol.toUpperCase(), type },
             expiration
           );
+
+          if (isJsonMode()) {
+            outputJson(response);
+            return;
+          }
 
           success(
             `\nOption Chain for ${response.baseSymbol} - Expiration: ${expiration}\n`

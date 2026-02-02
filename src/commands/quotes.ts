@@ -14,6 +14,8 @@ import {
   bold,
   dim,
   red,
+  isJsonMode,
+  outputJson,
 } from '../helpers/output.js';
 
 const VALID_QUOTE_TYPES: QuoteSecurityType[] = [
@@ -70,6 +72,11 @@ export function createQuotesCommand(): Command {
 
           const response = await getQuotes(accountId, instruments);
 
+          if (isJsonMode()) {
+            outputJson(response.quotes);
+            return;
+          }
+
           if (response.quotes.length === 0) {
             console.log('\nNo quotes returned.');
             return;
@@ -80,7 +87,9 @@ export function createQuotesCommand(): Command {
 
           for (const quote of response.quotes) {
             if (quote.outcome !== 'SUCCESS') {
-              console.log(`  ${red(quote.instrument.symbol)}: Failed to get quote`);
+              console.log(
+                `  ${red(quote.instrument.symbol)}: Failed to get quote`
+              );
               continue;
             }
 

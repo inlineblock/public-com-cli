@@ -6,7 +6,13 @@ import {
   RateLimitError,
   NotFoundError,
 } from '../helpers/api.js';
-import { error, success, info } from '../helpers/output.js';
+import {
+  error,
+  success,
+  info,
+  isJsonMode,
+  outputJson,
+} from '../helpers/output.js';
 
 export function createOrderCancelCommand(): Command {
   const cancel = new Command('order-cancel')
@@ -16,6 +22,11 @@ export function createOrderCancelCommand(): Command {
     .action(async (accountId: string, orderId: string) => {
       try {
         await cancelOrder(accountId, orderId);
+
+        if (isJsonMode()) {
+          outputJson({ orderId, status: 'cancellation_requested' });
+          return;
+        }
 
         success(`Cancellation request submitted for order: ${orderId}`);
         console.log();
